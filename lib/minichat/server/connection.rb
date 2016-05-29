@@ -21,16 +21,14 @@ module Minichat
       def write(type, *args)
         message = Message.new(type, *args)
         Minichat::Server.logger.debug "Sending to #{nick_name}: #{message}"
-        @socket.puts message
+        @socket.send_message message
       end
 
       def read
-        raw_message = @socket.gets
-        if raw_message
-          Minichat::Server.logger.debug 'Received from ' \
-            "#{nick_name}: #{raw_message}"
-          Message.parse(raw_message.chomp)
-        end
+        message = @socket.read_message
+        Minichat::Server.logger.debug 'Received from ' \
+          "#{nick_name}: #{message}" if message
+        message
       end
     end
   end

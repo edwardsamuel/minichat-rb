@@ -3,6 +3,7 @@ require 'socket'
 
 require_relative './connection'
 require_relative '../message'
+require_relative '../mtcp_server'
 
 module Minichat
   # Minichat server
@@ -32,16 +33,7 @@ module Minichat
 
       def start_server
         logger.info "Starting Minichat Server on #{host}:#{port}"
-
-        # Create TCP Connection, IPv4
-        @socket = Socket.new(Socket::AF_INET, Socket::SOCK_STREAM, 0)
-
-        # To allow reuse the address (for rapid restarts of the server)
-        @socket.setsockopt(Socket::SOL_SOCKET, Socket::SO_REUSEADDR, 1)
-
-        # Bind socket to specified host and port
-        @socket.bind(Socket.sockaddr_in(@port, @host))
-        @socket.listen(5)
+        @socket = MTCPServer.new(@host, @port)
       end
 
       def handle_at_exit
@@ -55,10 +47,15 @@ module Minichat
       def accept_clients
         loop do
           Thread.start(@socket.accept) do |socket, addrinfo|
-            connection = handle_new_connection(socket, addrinfo)
-            if connection
-              listen_connection(connection)
-            else
+            begin
+              connection = handle_new_connection(socket, addrinfo)
+              if connection
+                listen_connection(connection)
+              else
+                Thread.current.terminate
+              end
+            rescue => e
+              logger.error e.message
               Thread.current.terminate
             end
           end
@@ -116,7 +113,7 @@ module Minichat
 
       def chat(connection, message)
         target = @clients[message.args[1]]
-        raise "User #{connection.nick_name} " \
+        raise "User #{message.args[1]} " \
               'is not found or already disconnected' unless target
         target.write(:chat, connection.nick_name, message.args[1],
                      message.args[2])
