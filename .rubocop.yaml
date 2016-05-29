@@ -1,4 +1,0 @@
-AllCops:
-  Exclude:
-    - 'spec/**/*'
-    - 'lib/google_maps_service/polyline.rb'

@@ -1,0 +1,5 @@
+#!/usr/bin/env ruby
+
+require 'minichat/client'
+client = Minichat::Client::Client.new
+client.run
