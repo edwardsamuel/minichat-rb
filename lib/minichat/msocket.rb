@@ -4,6 +4,7 @@ module Minichat
   # Minichat socket helper to read/send message
   module MSocket
     SEPARATOR = "\n".freeze
+    LIMIT = 102400 # 100K limit
 
     def read_message
       # gets is a Ruby native implementation to read until find a separator
@@ -16,7 +17,7 @@ module Minichat
         temp = recv(1024)
         @buffer << temp
         return nil if temp.empty?
-        break if temp.include?(SEPARATOR)
+        break if temp.include?(SEPARATOR) || @buffer.size > LIMIT
       end
 
       raw_message, @buffer = @buffer.split(SEPARATOR, 2)
@@ -35,6 +36,7 @@ module Minichat
       # The following method is just simulating C recv method
       raw_message = message.to_s
       raw_message << SEPARATOR unless raw_message.end_with?(SEPARATOR)
+      raise ArgumentError, 'Message can not be over 100K' if raw_message.length > LIMIT
       until raw_message.empty? do
         sent = send(raw_message, 0)
         raw_message = raw_message[sent..-1]

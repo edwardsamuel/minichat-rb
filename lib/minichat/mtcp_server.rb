@@ -5,7 +5,7 @@ module Minichat
   # TCP/IP server socket implementation
   class MTCPServer < ::Socket
     def initialize(hostname, port)
-      super(AF_INET, SOCK_STREAM, 0)
+      super(Addrinfo.ip(hostname).ipv6? ? AF_INET6 : AF_INET, SOCK_STREAM, 0)
 
       # To allow reuse the address (for rapid restarts of the server)
       setsockopt(Socket::SOL_SOCKET, Socket::SO_REUSEADDR, 1)
