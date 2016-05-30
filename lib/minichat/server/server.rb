@@ -95,34 +95,53 @@ module Minichat
             handle_message(connection, message)
           else
             shutdown(connection)
-            Thread.current.terminate
           end
         end
       end
 
       def handle_message(connection, message)
-        case message.type
-        when :chat
-          chat(connection, message)
-        when :broadcast
-          broadcast(connection, message)
+        begin
+          case message.type
+          when :chat
+            chat(connection, message)
+          when :broadcast
+            broadcast(connection, message)
+          end
+        rescue => e
+          begin
+            connection.write(:error, e.message)
+          rescue => e1
+            logger.error e1.message
+            shutdown(connection)
+          end
         end
-      rescue => e
-        connection.write(:error, e.message)
       end
 
       def chat(connection, message)
-        target = @clients[message.args[1]]
+        target_connection = @clients[message.args[1]]
         raise "User #{message.args[1]} " \
-              'is not found or already disconnected' unless target
-        target.write(:chat, connection.nick_name, message.args[1],
-                     message.args[2])
+              'is not found or already disconnected' unless target_connection
+
+        begin
+          target_connection.write(:chat, connection.nick_name, message.args[1],
+                                  message.args[2])
+        rescue => e
+          logger.error e.message
+          shutdown(target_connection)
+          raise "User #{message.args[1]} " \
+                'is not found or already disconnected'
+        end
       end
 
       def broadcast(connection, message)
         @clients.each do |_key, target_connection|
-          target_connection.write(message.type, connection.nick_name,
-                                  message.args[1])
+          begin
+            target_connection.write(message.type, connection.nick_name,
+                                    message.args[1])
+          rescue => e
+            logger.error e.message
+            shutdown(target_connection)
+          end
         end
       end
 
@@ -130,6 +149,7 @@ module Minichat
         logger.info "User #{connection} is disconnected."
         @clients.delete(connection.nick_name)
         connection.close
+        connection.thread.terminate
       end
     end
   end
