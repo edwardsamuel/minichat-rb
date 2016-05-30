@@ -75,6 +75,7 @@ module Minichat
           logger.debug "#{nick_name} is taken"
           connection = Connection.new(nil, socket, Thread.current)
           connection.write(:error, "#{nick_name} is already taken")
+          shutdown(connection)
           return nil
         end
         save_connection(nick_name, socket)
@@ -147,7 +148,7 @@ module Minichat
 
       def shutdown(connection)
         logger.info "User #{connection} is disconnected."
-        @clients.delete(connection.nick_name)
+        @clients.delete(connection.nick_name) if connection.nick_name
         connection.close
         connection.thread.terminate
       end
