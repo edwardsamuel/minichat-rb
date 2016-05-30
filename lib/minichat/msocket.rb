@@ -26,6 +26,8 @@ module Minichat
       else
         nil
       end
+    rescue Errno::ECONNRESET => e
+      nil
     end
 
     def send_message(message)
