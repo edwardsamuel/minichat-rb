@@ -61,6 +61,8 @@ module Minichat
           _type, to, body = raw_line.split(' ', 3)
           message = Message.new(:chat, @nick_name, to, body)
           print_chat(message)
+        elsif raw_line == 'quit'
+          exit 0
         end
 
         if message
