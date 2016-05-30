@@ -3,13 +3,42 @@ require_relative './message'
 module Minichat
   # Minichat socket helper to read/send message
   module MSocket
+    SEPARATOR = "\n".freeze
+
     def read_message
-      raw_message = gets
-      Message.parse(raw_message.chomp) if raw_message
+      # gets is a Ruby native implementation to read until find a separator
+      # see: http://ruby-doc.org/core/IO.html#method-i-gets
+      # raw_message = gets
+
+      # The following method is just simulating C recv method
+      @buffer ||= ''
+      loop do
+        temp = recv(1024)
+        @buffer << temp
+        return nil if temp.empty?
+        break if temp.include?(SEPARATOR)
+      end
+
+      raw_message, @buffer = @buffer.split(SEPARATOR, 2)
+      if raw_message
+        Message.parse(raw_message.chomp)
+      else
+        nil
+      end
     end
 
     def send_message(message)
-      puts message
+      # puts is a Ruby native implementation to write a line with separator
+      # see: http://ruby-doc.org/core/IO.html#method-i-gets
+      # puts message
+
+      # The following method is just simulating C recv method
+      raw_message = message.to_s
+      raw_message << SEPARATOR unless raw_message.end_with?(SEPARATOR)
+      until raw_message.empty? do
+        sent = send(raw_message, 0)
+        raw_message = raw_message[sent..-1]
+      end
     end
   end
 end

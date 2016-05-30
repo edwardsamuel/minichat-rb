@@ -3,13 +3,13 @@ require 'digest'
 module Minichat
   # Message model.
   #
-  # Message types:
+  # Message formats:
   #
-  # 1. <sha1-hexdigest>|login|<nick_name>
-  # 1. <sha1-hexdigest>|info|<body>
-  # 1. <sha1-hexdigest>|error|<body>
-  # 1. <sha1-hexdigest>|broadcast|<origin_nick_name>|<body>
-  # 1. <sha1-hexdigest>|chat|<origin_nick_name>|<target_nick_name>|<body>
+  # 1. <sha256-hexdigest>|login|<nick_name>
+  # 1. <sha256-hexdigest>|info|<body>
+  # 1. <sha256-hexdigest>|error|<body>
+  # 1. <sha256-hexdigest>|broadcast|<origin_nick_name>|<body>
+  # 1. <sha256-hexdigest>|chat|<origin_nick_name>|<target_nick_name>|<body>
   #
   # The <sha1-digest> is counted by performing SHA-1 for type and arguments
   # chunks.
@@ -50,10 +50,10 @@ module Minichat
     end
 
     def calculate_hexdigest
-      sha1 = Digest::SHA1.new
-      sha1.update(type.to_s)
-      args.each { |arg| sha1 << arg.to_s }
-      sha1.hexdigest
+      sha256 = Digest::SHA256.new
+      sha256.update(type.to_s)
+      args.each { |arg| sha256 << arg.to_s }
+      sha256.hexdigest
     end
   end
 end
