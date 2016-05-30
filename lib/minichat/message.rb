@@ -18,7 +18,7 @@ module Minichat
 
     def self.parse(str)
       hexdigest, type, payload = str.split('|', 3)
-      raise 'Bad message' unless type
+      raise ArgumentError, 'Bad message' unless type
 
       type = type.to_sym
       case type
@@ -29,10 +29,10 @@ module Minichat
       when :chat
         message = Message.new(type, *payload.split('|', 3))
       else
-        raise 'Bad message'
+        raise ArgumentError, 'Bad message'
       end
 
-      raise 'Hexdigest is not match' unless message.hexdigest == hexdigest
+      raise ArgumentError, 'Hexdigest is not match' unless message.hexdigest == hexdigest
       message
     end
 

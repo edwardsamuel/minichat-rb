@@ -1,5 +1,16 @@
 #!/usr/bin/env ruby
 
 require 'minichat/server'
-server = Minichat::Server::Server.new
+
+if ARGV.empty?
+  server_host = '127.0.0.1'
+  server_port = 3000
+elsif ARGV.length == 2
+  server_host, server_port = ARGV
+else
+  puts "Usage: "
+  puts "  #{$0} [<server_host> <server_port>]"
+  exit 1
+end
+server = Minichat::Server::Server.new server_host, server_port
 server.run

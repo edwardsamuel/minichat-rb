@@ -13,13 +13,13 @@ bundle install
 Start the server:
 
 ```
-ruby -Ilib ./bin/minichat-server
+ruby -Ilib ./bin/minichat-server [<server_host> <server_port>]
 ```
 
 Start the client:
 
 ```
-ruby -Ilib ./bin/minichat-server
+ruby -Ilib ./bin/minichat-client [<server_host> <server_port>]
 ```
 
 ### Command on client
